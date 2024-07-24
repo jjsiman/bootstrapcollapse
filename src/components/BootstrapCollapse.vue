@@ -11,8 +11,8 @@ const bezier = new Bezier([
 ]);
 
 interface Props {
-  id: String;
-  duration?: Number;
+  id: string;
+  duration?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {

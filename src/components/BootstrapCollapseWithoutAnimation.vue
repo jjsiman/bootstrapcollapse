@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 
 interface Props {
-  id: String;
+  id: string;
 }
 
 defineProps<Props>();
