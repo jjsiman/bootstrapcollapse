@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Bezier } from 'bezier-js';
 
 // Mimic CSS easing transition
@@ -20,13 +20,17 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const show = ref(false);
-const animating = ref(false);
+const height = ref('');
 
 const zero = ref(0);
 
-function onBeforeEnter(el: Element) {
-  (el as HTMLElement).style.height = '0px';
-  animating.value = true;
+const collapseStyles = computed(() => ({
+  height: height.value,
+  overflow: height.value ? 'hidden' : undefined,
+}));
+
+function onBeforeEnter() {
+  height.value = '0px';
 }
 
 function onEnter(el: Element, done: () => void) {
@@ -34,13 +38,8 @@ function onEnter(el: Element, done: () => void) {
   requestAnimationFrame(() => animate(zero.value, el, (t) => ease(t), done));
 }
 
-function onAfterEnter() {
-  animating.value = false;
-}
-
 function onBeforeLeave(el: Element) {
-  (el as HTMLElement).style.height = `${el.scrollHeight}px`;
-  animating.value = true;
+  height.value = `${el.scrollHeight}px`;
 }
 
 function onLeave(el: Element, done: () => void) {
@@ -48,10 +47,6 @@ function onLeave(el: Element, done: () => void) {
   requestAnimationFrame(() =>
     animate(zero.value, el, (t) => ease(1 - t), done)
   );
-}
-
-function onAfterLeave() {
-  animating.value = false;
 }
 
 function animate(
@@ -62,10 +57,10 @@ function animate(
 ) {
   const value = (timestamp - zero.value) / props.duration;
   if (value < 1) {
-    (el as HTMLElement).style.height = `${easingFn(value) * el.scrollHeight}px`;
+    height.value = `${easingFn(value) * el.scrollHeight}px`;
     requestAnimationFrame((t) => animate(t, el, easingFn, done));
   } else {
-    (el as HTMLElement).style.height = '';
+    height.value = '';
     done();
   }
 }
@@ -89,12 +84,10 @@ function ease(t: number): number {
     :css="false"
     @before-enter="onBeforeEnter"
     @enter="onEnter"
-    @after-enter="onAfterEnter"
     @before-leave="onBeforeLeave"
     @leave="onLeave"
-    @after-leave="onAfterLeave"
   >
-    <div v-show="show" :id :class="{ 'overflow-hidden': animating }">
+    <div v-show="show" :id :style="collapseStyles">
       <slot name="content" />
     </div>
   </Transition>
