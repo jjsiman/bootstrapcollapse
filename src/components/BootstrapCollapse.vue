@@ -35,7 +35,7 @@ function onBeforeEnter() {
 
 function onEnter(el: Element, done: () => void) {
   zero.value = performance.now();
-  requestAnimationFrame(() => animate(zero.value, el, (t) => ease(t), done));
+  animate(zero.value, el.scrollHeight, (t) => ease(t), done);
 }
 
 function onBeforeLeave(el: Element) {
@@ -44,21 +44,19 @@ function onBeforeLeave(el: Element) {
 
 function onLeave(el: Element, done: () => void) {
   zero.value = performance.now();
-  requestAnimationFrame(() =>
-    animate(zero.value, el, (t) => ease(1 - t), done)
-  );
+  animate(zero.value, el.scrollHeight, (t) => ease(1 - t), done)
 }
 
 function animate(
   timestamp: number,
-  el: Element,
+  maxHeight: number,
   easingFn: (t: number) => number,
   done: () => void
 ) {
   const value = (timestamp - zero.value) / props.duration;
   if (value < 1) {
-    height.value = `${easingFn(value) * el.scrollHeight}px`;
-    requestAnimationFrame((t) => animate(t, el, easingFn, done));
+    height.value = `${easingFn(value) * maxHeight}px`;
+    requestAnimationFrame((t) => animate(t, maxHeight, easingFn, done));
   } else {
     height.value = '';
     done();
